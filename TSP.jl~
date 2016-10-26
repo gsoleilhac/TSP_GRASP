@@ -1,0 +1,59 @@
+include("ParserTSP.jl")
+include("fonctionsTSP.jl")
+const plotting = false
+					
+xyData, names, distancier = parse(ARGS[1])
+
+f = open("output.txt", "w") 
+
+writedlm(f, transpose([t.x for t = xyData]), " ")
+writedlm(f, transpose([t.y for t = xyData]), " ")
+for i = 1:length(xyData)-1
+	write(f, names[i], ",")
+end
+write(f, names[end],"\n")
+
+
+
+#x0 = CIH(xyData,distancier,f) #Calcule une solution initiale avec l'algo CIH et écrit les étapes dans le fichier f
+x0 = NNH(distancier, f)
+#x0 = randperm(length(xyData))
+
+z = eval(x0,distancier)
+println("x0 = ",x0)
+println("z(x0) = ", z)
+println("Local search...")
+
+while true
+	#ls_3opt(x0,distancier)
+	ls_2opt(x0,distancier)
+	writedlm(f, transpose(x0), " ")
+	zprime = eval(x0,distancier)
+	println(zprime)
+ 	zprime == z && begin z=zprime; break; end
+	z = zprime
+end
+
+println()
+println("xf = ",x0)
+for n = names[1:end-1]
+	print(n,", ")
+end
+println(names[end])
+println("z(xf) = ", z)
+
+close(f)
+
+
+
+
+println("TEST")
+xa = CIH(xyData,distancier,f)
+xb = NNH(distancier, f)
+
+xc = relink(xa,xb,distancier)
+
+println(eval(xa,distancier))
+println(eval(xb,distancier))
+println(eval(xc,distancier))
+
